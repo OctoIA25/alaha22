@@ -1,0 +1,26 @@
+version: '3.9'
+
+services:
+  web:
+    build:
+      context: .
+    container_name: alaha22-web
+    env_file:
+      - .env
+    environment:
+      DISPLAY: :1
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - '8000:8000'
+      - '6080:6080'
+      - '5900:5900'
+    volumes:
+      - ./:/app
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: alaha22-redis
+    ports:
+      - '6379:6379'

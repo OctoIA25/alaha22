@@ -43,7 +43,21 @@ def computer_use_view(request):
                 json={'task': task},
                 timeout=600,
             )
-            result = response.json()
+            try:
+                result = response.json()
+            except ValueError:
+                preview = (response.text or '')[:800]
+                return JsonResponse(
+                    {
+                        'success': False,
+                        'error': 'Worker remoto retornou resposta não-JSON.',
+                        'worker_status_code': response.status_code,
+                        'worker_content_type': response.headers.get('content-type', ''),
+                        'worker_response_preview': preview,
+                    },
+                    status=502,
+                )
+
             return JsonResponse(result, status=response.status_code)
         except requests.RequestException as exc:
             return JsonResponse({'success': False, 'error': f'Falha ao chamar worker remoto: {exc}'}, status=502)

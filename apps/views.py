@@ -7,6 +7,23 @@ from django.views.decorators.http import require_POST
 from brain.computer_use import run_computer_use
 
 
+def index_view(request):
+    return JsonResponse(
+        {
+            'service': 'alaha22',
+            'status': 'ok',
+            'routes': {
+                'health': '/healthz',
+                'computer_use': '/computer-use/',
+            },
+        }
+    )
+
+
+def healthz_view(request):
+    return JsonResponse({'status': 'healthy'})
+
+
 @csrf_exempt
 @require_POST
 def computer_use_view(request):

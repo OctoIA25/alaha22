@@ -146,6 +146,12 @@
                 <p class="hint">Configure <code>NOVNC_URL</code> no Easypanel com a URL do noVNC que está no seu AWS.</p>
                 <p id="novnc-url" class="output">{{ novnc_url|default:"NOVNC_URL não configurado." }}</p>
             </div>
+
+            <div class="panel">
+                <h3>Worker remoto</h3>
+                <p class="hint">Configure <code>WORKER_URL</code> no Easypanel com a URL do worker HTTP no AWS.</p>
+                <p id="worker-url" class="output">{{ worker_url|default:"WORKER_URL não configurado." }}</p>
+            </div>
         </aside>
 
         <main class="desktop">

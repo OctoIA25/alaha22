@@ -16,6 +16,7 @@ def index_view(request):
         'dashboard.html',
         {
             'novnc_url': settings.NOVNC_URL,
+            'worker_url': settings.WORKER_URL,
         },
     )
 

@@ -1,6 +1,8 @@
 import json
 
+from django.conf import settings
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -8,15 +10,12 @@ from brain.computer_use import run_computer_use
 
 
 def index_view(request):
-    return JsonResponse(
+    return render(
+        request,
+        'dashboard.html',
         {
-            'service': 'alaha22',
-            'status': 'ok',
-            'routes': {
-                'health': '/healthz',
-                'computer_use': '/computer-use/',
-            },
-        }
+            'novnc_url': settings.NOVNC_URL,
+        },
     )
 
 

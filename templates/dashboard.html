@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alaha22 Dashboard</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0f172a;
+            --panel: #111827;
+            --muted: #94a3b8;
+            --border: #1f2937;
+            --accent: #22c55e;
+            --accent-2: #38bdf8;
+            --danger: #ef4444;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Inter, Arial, sans-serif;
+            background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+            color: #e5e7eb;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            min-height: 100vh;
+        }
+        .sidebar, .desktop {
+            padding: 20px;
+        }
+        .sidebar {
+            border-right: 1px solid var(--border);
+            background: rgba(15, 23, 42, 0.85);
+        }
+        .panel {
+            background: rgba(17, 24, 39, 0.92);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+        h1, h2, h3 { margin: 0 0 12px; }
+        p { margin: 0 0 12px; color: var(--muted); }
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            resize: vertical;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #020617;
+            color: #e5e7eb;
+            padding: 14px;
+            font: inherit;
+        }
+        button {
+            width: 100%;
+            border: 0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            background: linear-gradient(90deg, var(--accent), var(--accent-2));
+            color: #02120a;
+        }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 12px;
+            background: #052e16;
+            color: #86efac;
+        }
+        .desktop iframe {
+            width: 100%;
+            min-height: calc(100vh - 40px);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: #000;
+        }
+        .output {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #cbd5e1;
+            background: #020617;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 14px;
+            max-height: 260px;
+            overflow: auto;
+        }
+        .hint {
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .warning {
+            color: #fca5a5;
+        }
+        .screenshot {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            display: none;
+            margin-top: 12px;
+        }
+        @media (max-width: 1100px) {
+            .layout { grid-template-columns: 1fr; }
+            .sidebar { border-right: 0; border-bottom: 1px solid var(--border); }
+            .desktop iframe { min-height: 70vh; }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="panel">
+                <div class="badge">Alaha22 Computer Use</div>
+                <h1>Envie tarefas para a IA</h1>
+                <p>Use o chat abaixo para disparar o loop de computer use e acompanhe o desktop remoto ao lado.</p>
+            </div>
+
+            <div class="panel">
+                <h2>Comando</h2>
+                <textarea id="task" placeholder="Ex.: abra o Chrome e pesquise por OpenAI"></textarea>
+                <div style="height: 12px;"></div>
+                <button id="submit">Executar tarefa</button>
+                <div style="height: 10px;"></div>
+                <p class="hint">O endpoint usado é <code>/computer-use/</code>.</p>
+            </div>
+
+            <div class="panel">
+                <h3>Status</h3>
+                <div id="status" class="output">Aguardando comando.</div>
+                <img id="screenshot" class="screenshot" alt="Último screenshot" />
+            </div>
+
+            <div class="panel">
+                <h3>noVNC remoto</h3>
+                <p class="hint">Configure <code>NOVNC_URL</code> no Easypanel com a URL do noVNC que está no seu AWS.</p>
+                <p id="novnc-url" class="output">{{ novnc_url|default:"NOVNC_URL não configurado." }}</p>
+            </div>
+        </aside>
+
+        <main class="desktop">
+            {% if novnc_url %}
+                <iframe src="{{ novnc_url }}" allow="clipboard-read; clipboard-write"></iframe>
+            {% else %}
+                <div class="panel">
+                    <h2>Configure o noVNC</h2>
+                    <p class="warning">Defina a variável <code>NOVNC_URL</code> no ambiente do Easypanel para incorporar o seu desktop remoto do AWS aqui.</p>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <script>
+        const button = document.getElementById('submit');
+        const taskInput = document.getElementById('task');
+        const statusEl = document.getElementById('status');
+        const screenshotEl = document.getElementById('screenshot');
+
+        async function sendTask() {
+            const task = taskInput.value.trim();
+            if (!task) {
+                statusEl.textContent = 'Digite uma tarefa antes de enviar.';
+                return;
+            }
+
+            button.disabled = true;
+            statusEl.textContent = 'Executando tarefa...';
+            screenshotEl.style.display = 'none';
+            screenshotEl.removeAttribute('src');
+
+            try {
+                const response = await fetch('/computer-use/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ task })
+                });
+                const data = await response.json();
+                statusEl.textContent = JSON.stringify(data, null, 2);
+                if (data.last_screenshot) {
+                    screenshotEl.src = `data:image/png;base64,${data.last_screenshot}`;
+                    screenshotEl.style.display = 'block';
+                }
+            } catch (error) {
+                statusEl.textContent = `Falha ao enviar tarefa: ${error}`;
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        button.addEventListener('click', sendTask);
+        taskInput.addEventListener('keydown', (event) => {
+            if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+                sendTask();
+            }
+        });
+    </script>
+</body>
+</html>

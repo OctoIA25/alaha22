@@ -35,7 +35,7 @@ ROOT_URLCONF = 'alaha.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -70,3 +70,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
 DISPLAY = os.getenv('DISPLAY', ':1')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+NOVNC_URL = os.getenv('NOVNC_URL', '')

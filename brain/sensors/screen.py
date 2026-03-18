@@ -35,7 +35,9 @@ def capture_screen_base64(display: str | None = None) -> dict:
 
         with Image.open(screenshot_path) as image:
             image = image.convert('RGB')
+            original_width, original_height = image.size
             image.thumbnail(MAX_SCREENSHOT_SIZE)
+            width, height = image.size
             buffer = BytesIO()
             image.save(buffer, format='PNG', optimize=True)
 
@@ -46,4 +48,8 @@ def capture_screen_base64(display: str | None = None) -> dict:
             'base64': image_b64,
             'hash': image_hash,
             'display': display_value,
+            'width': width,
+            'height': height,
+            'original_width': original_width,
+            'original_height': original_height,
         }

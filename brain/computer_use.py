@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 from typing import Any
 
 from brain.action.execute_task import ActionExecutionError, execute_task
@@ -57,7 +58,16 @@ def run_computer_use(task: str) -> dict[str, Any]:
 
             decision = assess_context(task=task, screenshot_b64=screen['base64'])
             decision['step'] = index
+            decision['_screen'] = {
+                'width': screen.get('width'),
+                'height': screen.get('height'),
+                'original_width': screen.get('original_width'),
+                'original_height': screen.get('original_height'),
+            }
             execution = execute_task(decision, display=display)
+
+            if decision.get('action') in {'click', 'type', 'scroll', 'key'}:
+                time.sleep(1.0)
             step_record = {
                 'step': index,
                 'decision': decision,

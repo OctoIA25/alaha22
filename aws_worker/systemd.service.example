@@ -1,0 +1,14 @@
+[Unit]
+Description=Alaha22 AWS Worker
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/alaha22-worker
+EnvironmentFile=/opt/alaha22-worker/.env
+ExecStart=/opt/alaha22-worker/.venv/bin/python /opt/alaha22-worker/aws_worker/app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
